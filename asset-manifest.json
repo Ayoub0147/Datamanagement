@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/Datamanagement/static/css/main.e6c13ad2.css",
+    "main.js": "/Datamanagement/static/js/main.7f2628a1.js",
+    "static/js/239.2b8e07b5.chunk.js": "/Datamanagement/static/js/239.2b8e07b5.chunk.js",
+    "static/js/977.ded89eeb.chunk.js": "/Datamanagement/static/js/977.ded89eeb.chunk.js",
+    "static/js/667.a2349005.chunk.js": "/Datamanagement/static/js/667.a2349005.chunk.js",
+    "service-worker.js": "/Datamanagement/service-worker.js",
+    "index.html": "/Datamanagement/index.html",
+    "main.e6c13ad2.css.map": "/Datamanagement/static/css/main.e6c13ad2.css.map",
+    "main.7f2628a1.js.map": "/Datamanagement/static/js/main.7f2628a1.js.map",
+    "239.2b8e07b5.chunk.js.map": "/Datamanagement/static/js/239.2b8e07b5.chunk.js.map",
+    "977.ded89eeb.chunk.js.map": "/Datamanagement/static/js/977.ded89eeb.chunk.js.map",
+    "667.a2349005.chunk.js.map": "/Datamanagement/static/js/667.a2349005.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.7f2628a1.js"
+  ]
+}
