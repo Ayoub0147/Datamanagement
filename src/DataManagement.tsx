@@ -48,6 +48,7 @@ interface Article {
   category_name: string;
   subdomain_name: string;
   domain_name: string;
+  manufacturers?: ArticleManufacturerInfo[];
 }
 
 interface Manufacturer {
@@ -57,6 +58,14 @@ interface Manufacturer {
   phone?: string;
   email?: string;
   is_supplier?: boolean;
+}
+
+interface ArticleManufacturerInfo {
+  id: string;
+  manufacturer_id: string;
+  manufacturer_name: string;
+  reference?: string;
+  certified_by_onee?: boolean;
 }
 
 interface ArticleManufacturer {
@@ -114,7 +123,6 @@ const DataManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [manufacturers, setManufacturers] = useState<Manufacturer[]>([]);
-  const [articleManufacturers, setArticleManufacturers] = useState<ArticleManufacturer[]>([]);
   const [contractors, setContractors] = useState<Contractor[]>([]);
   const [contractorAgreements, setContractorAgreements] = useState<ContractorAgreement[]>([]);
   const [categoryAgreements, setCategoryAgreements] = useState<CategoryAgreement[]>([]);
@@ -132,7 +140,6 @@ const DataManagement: React.FC = () => {
         fetchCategories(),
         fetchArticles(),
         fetchManufacturers(),
-        fetchArticleManufacturers(),
         fetchContractors(),
         fetchContractorAgreements(),
         fetchCategoryAgreements(),
@@ -199,6 +206,13 @@ const DataManagement: React.FC = () => {
             name,
             domains!inner(name)
           )
+        ),
+        article_manufacturer(
+          id,
+          manufacturer_id,
+          reference,
+          certified_by_onee,
+          manufacturers(name)
         )
       `)
       .order('name');
@@ -208,7 +222,14 @@ const DataManagement: React.FC = () => {
       ...item,
       category_name: item.categories.name,
       subdomain_name: item.categories.subdomains.name,
-      domain_name: item.categories.subdomains.domains.name
+      domain_name: item.categories.subdomains.domains.name,
+      manufacturers: item.article_manufacturer?.map((am: any) => ({
+        id: am.id,
+        manufacturer_id: am.manufacturer_id,
+        manufacturer_name: am.manufacturers.name,
+        reference: am.reference,
+        certified_by_onee: am.certified_by_onee
+      })) || []
     })) || []);
   };
 
@@ -222,23 +243,7 @@ const DataManagement: React.FC = () => {
     setManufacturers(data || []);
   };
 
-  const fetchArticleManufacturers = async () => {
-    const { data, error } = await supabase
-      .from('article_manufacturer')
-      .select(`
-        *,
-        articles!inner(name),
-        manufacturers!inner(name)
-      `)
-      .order('reference');
-    
-    if (error) throw error;
-    setArticleManufacturers(data?.map(item => ({
-      ...item,
-      article_name: item.articles.name,
-      manufacturer_name: item.manufacturers.name
-    })) || []);
-  };
+
 
   const fetchContractors = async () => {
     const { data, error } = await supabase
@@ -344,6 +349,31 @@ const DataManagement: React.FC = () => {
       }
     }
     
+    // For articles, fetch manufacturer IDs and references
+    if (activeTab === 'articles') {
+      try {
+        const { data: articleManufacturers, error } = await supabase
+          .from('article_manufacturer')
+          .select('manufacturer_id, reference')
+          .eq('article_id', record.id);
+        
+        if (!error && articleManufacturers) {
+          formValues.manufacturers = articleManufacturers.map(am => am.manufacturer_id);
+          
+          // Set manufacturer references
+          const manufacturerReferences: { [key: string]: string } = {};
+          articleManufacturers.forEach(am => {
+            if (am.reference) {
+              manufacturerReferences[am.manufacturer_id] = am.reference;
+            }
+          });
+          formValues.manufacturer_references = manufacturerReferences;
+        }
+      } catch (error) {
+        console.error('Error fetching article manufacturers:', error);
+      }
+    }
+    
     form.setFieldsValue(formValues);
     setModalVisible(true);
   };
@@ -370,9 +400,7 @@ const DataManagement: React.FC = () => {
         case 'manufacturers':
           error = (await supabase.from('manufacturers').delete().eq('id', id)).error;
           break;
-        case 'article_manufacturers':
-          error = (await supabase.from('article_manufacturer').delete().eq('id', id)).error;
-          break;
+
         case 'contractors':
           error = (await supabase.from('contractors').delete().eq('id', id)).error;
           break;
@@ -443,9 +471,23 @@ const DataManagement: React.FC = () => {
               .from('articles')
               .update({ 
                 name: values.name, 
-                category_id: values.category_id 
+                category_id: values.category_id
               })
               .eq('id', editingRecord.id)).error;
+            
+            if (!error && values.manufacturers) {
+              // Delete existing article_manufacturer entries
+              await supabase.from('article_manufacturer').delete().eq('article_id', editingRecord.id);
+              
+              // Insert new article_manufacturer entries with references
+              const articleManufacturers = values.manufacturers.map((manufacturerId: string) => ({
+                article_id: editingRecord.id,
+                manufacturer_id: manufacturerId,
+                reference: values.manufacturer_references?.[manufacturerId] || null
+              }));
+              
+              error = (await supabase.from('article_manufacturer').insert(articleManufacturers)).error;
+            }
             break;
           case 'manufacturers':
             error = (await supabase
@@ -459,17 +501,7 @@ const DataManagement: React.FC = () => {
               })
               .eq('id', editingRecord.id)).error;
             break;
-          case 'article_manufacturers':
-            error = (await supabase
-              .from('article_manufacturer')
-              .update({ 
-                article_id: values.article_id,
-                manufacturer_id: values.manufacturer_id,
-                reference: values.reference,
-                certified_by_onee: values.certified_by_onee
-              })
-              .eq('id', editingRecord.id)).error;
-            break;
+
           case 'contractors':
             error = (await supabase
               .from('contractors')
@@ -571,9 +603,24 @@ const DataManagement: React.FC = () => {
               .insert({ 
                 id: generateUUID(),
                 name: values.name, 
-                category_id: values.category_id 
+                category_id: values.category_id
               })
               .select();
+            
+            if (result?.data && values.manufacturers) {
+              // Insert article_manufacturer entries with references
+              const articleManufacturers = values.manufacturers.map((manufacturerId: string) => ({
+                article_id: result.data[0].id,
+                manufacturer_id: manufacturerId,
+                reference: values.manufacturer_references?.[manufacturerId] || null
+              }));
+              
+              const { error: insertError } = await supabase.from('article_manufacturer').insert(articleManufacturers);
+              if (insertError) {
+                console.error('Supabase error:', insertError);
+                throw insertError;
+              }
+            }
             break;
           case 'manufacturers':
             result = await supabase
@@ -588,18 +635,7 @@ const DataManagement: React.FC = () => {
               })
               .select();
             break;
-          case 'article_manufacturers':
-            result = await supabase
-              .from('article_manufacturer')
-              .insert({ 
-                id: generateUUID(),
-                article_id: values.article_id,
-                manufacturer_id: values.manufacturer_id,
-                reference: values.reference,
-                certified_by_onee: values.certified_by_onee
-              })
-              .select();
-            break;
+
           case 'contractors':
             result = await supabase
               .from('contractors')
@@ -764,6 +800,74 @@ const DataManagement: React.FC = () => {
                 ))}
               </Select>
             </Form.Item>
+
+            <Form.Item
+              name="manufacturers"
+              label="Manufacturers"
+            >
+              <Select
+                mode="multiple"
+                placeholder="Select manufacturers"
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+                onChange={(selectedManufacturers) => {
+                  // Update the form with reference fields for selected manufacturers
+                  const currentValues = form.getFieldsValue();
+                  const references = currentValues.manufacturer_references || {};
+                  
+                  // Remove references for unselected manufacturers
+                  Object.keys(references).forEach(manufacturerId => {
+                    if (!selectedManufacturers.includes(manufacturerId)) {
+                      delete references[manufacturerId];
+                    }
+                  });
+                  
+                  form.setFieldsValue({ manufacturer_references: references });
+                }}
+              >
+                {manufacturers.length > 0 ? (
+                  manufacturers.map(manufacturer => (
+                    <Select.Option key={manufacturer.id} value={manufacturer.id}>
+                      {manufacturer.name}
+                    </Select.Option>
+                  ))
+                ) : (
+                  <Select.Option value="" disabled>No manufacturers available</Select.Option>
+                )}
+              </Select>
+            </Form.Item>
+            
+            <Form.Item
+              noStyle
+              shouldUpdate
+            >
+              {({ getFieldValue }) => {
+                const selectedManufacturers = getFieldValue('manufacturers') || [];
+                return selectedManufacturers.length > 0 ? (
+                  <div style={{ marginTop: '16px' }}>
+                    <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                      Manufacturer References (Optional)
+                    </Text>
+                    {selectedManufacturers.map((manufacturerId: string) => {
+                      const manufacturer = manufacturers.find(m => m.id === manufacturerId);
+                      return (
+                        <Form.Item
+                          key={manufacturerId}
+                          name={['manufacturer_references', manufacturerId]}
+                          label={`Reference for ${manufacturer?.name}`}
+                          style={{ marginBottom: '8px' }}
+                        >
+                          <Input placeholder="Enter reference number" />
+                        </Form.Item>
+                      );
+                    })}
+                  </div>
+                ) : null;
+              }}
+            </Form.Item>
           </Form>
         );
 
@@ -795,46 +899,7 @@ const DataManagement: React.FC = () => {
           </Form>
         );
 
-      case 'article_manufacturers':
-        return (
-          <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item
-              name="article_id"
-              label="Article"
-              rules={[{ required: true, message: 'Please select an article' }]}
-            >
-              <Select placeholder="Select an article">
-                {articles.map(article => (
-                  <Select.Option key={article.id} value={article.id}>
-                    {article.name} ({article.category_name})
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="manufacturer_id"
-              label="Manufacturer"
-              rules={[{ required: true, message: 'Please select a manufacturer' }]}
-            >
-              <Select placeholder="Select a manufacturer">
-                {manufacturers.map(manufacturer => (
-                  <Select.Option key={manufacturer.id} value={manufacturer.id}>
-                    {manufacturer.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="reference" label="Reference">
-              <Input />
-            </Form.Item>
-            <Form.Item name="certified_by_onee" label="Certified by ONEE" valuePropName="checked">
-              <Select>
-                <Select.Option value={true}>Yes</Select.Option>
-                <Select.Option value={false}>No</Select.Option>
-              </Select>
-            </Form.Item>
-          </Form>
-        );
+
 
       case 'contractors':
         return (
@@ -1051,6 +1116,31 @@ const DataManagement: React.FC = () => {
     { title: 'Category', dataIndex: 'category_name', key: 'category_name' },
     { title: 'Subdomain', dataIndex: 'subdomain_name', key: 'subdomain_name' },
     { title: 'Domain', dataIndex: 'domain_name', key: 'domain_name' },
+    { 
+      title: 'Manufacturers', 
+      key: 'manufacturers',
+      render: (_: any, record: Article) => (
+        <div>
+          {record.manufacturers && record.manufacturers.length > 0 ? (
+            record.manufacturers.map((manufacturer: ArticleManufacturerInfo) => (
+              <div key={manufacturer.id} style={{ marginBottom: '4px' }}>
+                <Tag color="blue">{manufacturer.manufacturer_name}</Tag>
+                {manufacturer.reference && (
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Ref: {manufacturer.reference}
+                  </Text>
+                )}
+                {manufacturer.certified_by_onee && (
+                  <Tag color="green" style={{ marginLeft: '4px' }}>ONEE Certified</Tag>
+                )}
+              </div>
+            ))
+          ) : (
+            <Text type="secondary">No manufacturers</Text>
+          )}
+        </div>
+      )
+    },
     {
       title: 'Actions',
       key: 'actions',
@@ -1120,46 +1210,7 @@ const DataManagement: React.FC = () => {
     },
   ];
 
-  const articleManufacturerColumns = [
-    { title: 'Article', dataIndex: 'article_name', key: 'article_name' },
-    { title: 'Manufacturer', dataIndex: 'manufacturer_name', key: 'manufacturer_name' },
-    { title: 'Reference', dataIndex: 'reference', key: 'reference' },
-    { 
-      title: 'Certified by ONEE', 
-      dataIndex: 'certified_by_onee', 
-      key: 'certified_by_onee',
-      render: (certified: boolean) => (
-        <Tag color={certified ? 'green' : 'red'}>
-          {certified ? 'Yes' : 'No'}
-        </Tag>
-      )
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: any, record: ArticleManufacturer) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            Edit
-          </Button>
-          <Popconfirm
-            title="Are you sure you want to delete this article-manufacturer link?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              Delete
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+
 
   const contractorColumns = [
     { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -1375,29 +1426,7 @@ const DataManagement: React.FC = () => {
         </>
       ),
     },
-    {
-      key: 'article_manufacturers',
-      label: 'Article-Manufacturer Links',
-      children: (
-        <>
-          <div style={{ marginBottom: '16px' }}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAdd}
-            >
-              Add Article-Manufacturer Link
-            </Button>
-          </div>
-          <Table
-            columns={articleManufacturerColumns}
-            dataSource={articleManufacturers}
-            rowKey="id"
-            loading={loading}
-          />
-        </>
-      ),
-    },
+
     {
       key: 'contractors',
       label: 'Contractors',
