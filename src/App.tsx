@@ -22,6 +22,8 @@ import ProductSearch from './ProductSearch';
 import ManufacturerSearch from './ManufacturerSearch';
 import ContractorSearch from './ContractorSearch';
 import ContractorInfo from './ContractorInfo';
+import ManufacturerInfo from './ManufacturerInfo';
+import ArticleInfo from './ArticleInfo';
 import ProjectCreationWizard from './ProjectCreationWizard';
 import CompletedProjects from './CompletedProjects';
 import DataManagement from './DataManagement';
@@ -326,8 +328,10 @@ function App() {
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute><ProductSearch /></ProtectedRoute>} />
               <Route path="/manufacturers" element={<ProtectedRoute><ManufacturerSearch /></ProtectedRoute>} />
+              <Route path="/manufacturers/:id" element={<ProtectedRoute><ManufacturerInfo /></ProtectedRoute>} />
               <Route path="/contractors" element={<ProtectedRoute><ContractorSearch /></ProtectedRoute>} />
               <Route path="/contractors/:id" element={<ProtectedRoute><ContractorInfo /></ProtectedRoute>} />
+              <Route path="/articles/:id" element={<ProtectedRoute><ArticleInfo /></ProtectedRoute>} />
               <Route path="/projects/create" element={<ProtectedRoute><ProjectCreationWizard /></ProtectedRoute>} />
               <Route path="/projects/completed" element={<ProtectedRoute><CompletedProjects /></ProtectedRoute>} />
               <Route path="/data-management" element={<ProtectedRoute><DataManagement /></ProtectedRoute>} />

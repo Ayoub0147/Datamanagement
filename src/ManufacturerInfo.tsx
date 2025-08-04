@@ -1,123 +1,214 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Typography, List, Spin, Button, Descriptions, Empty, Table, Modal, Form, Input, message } from 'antd';
+import { Card, Typography, List, Spin, Button, Descriptions, Empty, Tag, Space, Badge } from 'antd';
 import { supabase } from './supabaseClient';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { 
+  ArrowLeftOutlined, 
+  BuildOutlined, 
+  PhoneOutlined, 
+  MailOutlined, 
+  FileTextOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined
+} from '@ant-design/icons';
+
+interface Manufacturer {
+  id: string;
+  name: string;
+  contact: string;
+  phone: string;
+  email: string;
+  is_supplier: boolean;
+}
+
+interface Article {
+  id: string;
+  name: string;
+  category_name: string;
+  subdomain_name: string;
+  domain_name: string;
+  certified_by_onee: boolean;
+}
 
 const ManufacturerInfo: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [manufacturer, setManufacturer] = useState<any | null>(null);
+  const [manufacturer, setManufacturer] = useState<Manufacturer | null>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const fetchManufacturer = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      console.log('Fetching manufacturer with ID:', id);
+      
+      // Fetch manufacturer data
+      const { data: manufacturerData, error: manufacturerError } = await supabase
         .from('manufacturers')
-        .select(`
-          id, name, contact, phone, email,
-          manufacturer_contacts0 ( id, contact_name, phone, email )
-        `)
+        .select('*')
         .eq('id', id)
         .single();
-      setManufacturer(data);
-      setLoading(false);
-      if (data) form.setFieldsValue({
-        name: data.name,
-        contact: data.contact,
-        phone: data.phone,
-        email: data.email
-      });
-    };
-    fetchManufacturer();
-  }, [id]);
 
-  const handleEdit = () => {
-    setEditModalVisible(true);
-    form.setFieldsValue({
-      name: manufacturer.name,
-      contact: manufacturer.contact,
-      phone: manufacturer.phone,
-      email: manufacturer.email
-    });
-  };
-
-  const handleEditSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      setSaving(true);
-      const { error } = await supabase
-        .from('manufacturers')
-        .update(values)
-        .eq('id', id);
-      setSaving(false);
-      if (error) {
-        message.error(error.message);
+      if (manufacturerError) {
+        console.error('Error fetching manufacturer:', manufacturerError);
+        setLoading(false);
         return;
       }
-      setManufacturer({ ...manufacturer, ...values });
-      setEditModalVisible(false);
-      message.success('Manufacturer updated');
-    } catch (err) {
-      setSaving(false);
-    }
-  };
+
+      setManufacturer(manufacturerData);
+
+      // Fetch linked articles
+      const { data: articlesData, error: articlesError } = await supabase
+        .from('article_manufacturer')
+        .select(`
+          id,
+          certified_by_onee,
+          articles(
+            id,
+            name,
+            categories(
+              name,
+              subdomains(
+                name,
+                domains(name)
+              )
+            )
+          )
+        `)
+        .eq('manufacturer_id', id);
+
+      if (articlesError) {
+        console.error('Error fetching articles:', articlesError);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Raw articles data:', articlesData);
+
+      if (articlesData) {
+        const processedArticles = articlesData.map((am: any) => ({
+          id: am.articles?.id || '',
+          name: am.articles?.name || '',
+          category_name: am.articles?.categories?.[0]?.name || '',
+          subdomain_name: am.articles?.categories?.[0]?.subdomains?.[0]?.name || '',
+          domain_name: am.articles?.categories?.[0]?.subdomains?.[0]?.domains?.[0]?.name || '',
+          certified_by_onee: am.certified_by_onee
+        }));
+
+        console.log('Processed articles:', processedArticles);
+        setArticles(processedArticles);
+      }
+
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [id]);
 
   if (loading) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
-  if (!manufacturer) return <Typography.Text type="danger">Manufacturer not found.</Typography.Text>;
-  
-  const contactColumns = [
-    { title: 'Contact Name', dataIndex: 'contact_name', key: 'contact_name' },
-    { title: 'Phone', dataIndex: 'phone', key: 'phone' },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
-  ];
+  if (!manufacturer) return (
+    <div style={{ padding: '24px' }}>
+      <Button 
+        icon={<ArrowLeftOutlined />} 
+        onClick={() => navigate('/data-management')} 
+        style={{ marginBottom: 24 }}
+      >
+        Back to Data Management
+      </Button>
+      <Typography.Text type="danger">Manufacturer not found. ID: {id}</Typography.Text>
+    </div>
+  );
 
   return (
-    <div>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/manufacturers')} style={{ marginBottom: 24 }}>
-        Back to Manufacturer Search
-      </Button>
-      <Typography.Title level={2}>Manufacturer Information</Typography.Title>
-      <Card style={{ marginBottom: 24 }}>
-        <Descriptions title={manufacturer.name} bordered column={1} size="middle">
-          <Descriptions.Item label="Main Contact">{manufacturer.contact}</Descriptions.Item>
-          <Descriptions.Item label="Phone">{manufacturer.phone}</Descriptions.Item>
-          <Descriptions.Item label="Email">{manufacturer.email}</Descriptions.Item>
-        </Descriptions>
-        <Button type="primary" onClick={handleEdit} style={{ marginTop: 16 }}>Edit</Button>
-      </Card>
-      <Typography.Title level={4}>Additional Contacts</Typography.Title>
-      <Table
-        columns={contactColumns}
-        dataSource={manufacturer.manufacturer_contacts0 || []}
-        rowKey="id"
-        pagination={false}
-        bordered
-        locale={{ emptyText: <Empty description="No additional contacts found." /> }}
-      />
-      <Modal
-        title="Edit Manufacturer"
-        open={editModalVisible}
-        onCancel={() => setEditModalVisible(false)}
-        onOk={handleEditSubmit}
-        confirmLoading={saving}
-        okText="Save"
+    <div style={{ padding: '24px' }}>
+      <Button 
+        icon={<ArrowLeftOutlined />} 
+        onClick={() => navigate('/data-management')} 
+        style={{ marginBottom: 24 }}
       >
-        <Form layout="vertical" form={form} initialValues={{
-          name: manufacturer?.name,
-          contact: manufacturer?.contact,
-          phone: manufacturer?.phone,
-          email: manufacturer?.email
-        }}>
-          <Form.Item name="name" label="Name" rules={[{ required: true }]}> <Input /> </Form.Item>
-          <Form.Item name="contact" label="Main Contact"> <Input /> </Form.Item>
-          <Form.Item name="phone" label="Phone"> <Input /> </Form.Item>
-          <Form.Item name="email" label="Email"> <Input /> </Form.Item>
-        </Form>
-      </Modal>
+        Back to Data Management
+      </Button>
+      
+      <Card>
+        <div style={{ marginBottom: '24px' }}>
+          <Typography.Title level={2}>
+            <BuildOutlined style={{ marginRight: '8px' }} />
+            Manufacturer Information
+          </Typography.Title>
+        </div>
+
+        {/* Manufacturer Details */}
+        <Card title="Manufacturer Details" style={{ marginBottom: 24 }}>
+          <Descriptions bordered column={2} size="middle">
+            <Descriptions.Item label="Name" span={2}>
+              <Typography.Text strong>{manufacturer.name}</Typography.Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Contact">
+              <Typography.Text>{manufacturer.contact || 'N/A'}</Typography.Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Phone">
+              <Typography.Text>{manufacturer.phone || 'N/A'}</Typography.Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Email" span={2}>
+              <Typography.Text>{manufacturer.email || 'N/A'}</Typography.Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Supplier Status" span={2}>
+              <Tag color={manufacturer.is_supplier ? 'green' : 'red'}>
+                {manufacturer.is_supplier ? 'Yes' : 'No'}
+              </Tag>
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+
+        {/* Linked Articles */}
+        <Card 
+          title={
+            <Space>
+              <FileTextOutlined />
+              Linked Articles
+              <Badge count={articles.length} showZero />
+            </Space>
+          }
+        >
+          <List
+            bordered
+            dataSource={articles}
+            renderItem={item => (
+              <List.Item>
+                <div style={{ width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <Typography.Text strong>{item.name}</Typography.Text>
+                      <br />
+                      <Space size="small" style={{ marginTop: 4 }}>
+                        <Tag color="blue">{item.domain_name}</Tag>
+                        <Typography.Text type="secondary">{item.subdomain_name}</Typography.Text>
+                        <Typography.Text type="secondary">• {item.category_name}</Typography.Text>
+                      </Space>
+                    </div>
+                    <div>
+                      <Tag 
+                        color={item.certified_by_onee ? 'green' : 'red'}
+                        icon={item.certified_by_onee ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                      >
+                        {item.certified_by_onee ? 'ONEE Certified' : 'Not Certified'}
+                      </Tag>
+                    </div>
+                  </div>
+                </div>
+              </List.Item>
+            )}
+            locale={{ 
+              emptyText: (
+                <Empty 
+                  description="No articles linked to this manufacturer" 
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              ) 
+            }}
+            style={{ background: '#fafcff', borderRadius: 8 }}
+          />
+        </Card>
+      </Card>
     </div>
   );
 };

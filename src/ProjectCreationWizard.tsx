@@ -24,7 +24,6 @@ const { Title } = Typography;
 type ManufacturerOption = {
   value: string;
   label: string;
-  reference: string;
   certified_by_onee?: boolean;
   manufacturer?: {
     contact?: string;
@@ -80,7 +79,7 @@ const ProjectCreationWizard: React.FC = () => {
     agreementType: null as string | null,
     contractor: null as any,
     articles: [] as any[],
-    suppliers: [] as { article_id: string; manufacturer_id: string; reference: string }[],
+    suppliers: [] as { article_id: string; manufacturer_id: string }[],
   });
   const [manufacturerOptions, setManufacturerOptions] = useState<Record<string, ManufacturerOption[]>>({});
   const [loadingManufacturers, setLoadingManufacturers] = useState(false);
@@ -186,7 +185,6 @@ const ProjectCreationWizard: React.FC = () => {
           .from('article_manufacturer')
           .select(`
             manufacturer_id,
-            reference,
             certified_by_onee,
             manufacturers (
               id,
@@ -206,14 +204,12 @@ const ProjectCreationWizard: React.FC = () => {
         options[article.id] = [];
         (amRows || []).forEach((row: any) => {
           if (row.manufacturer_id && row.manufacturers) {
-            const reference = row.reference || 'No Reference';
             if (!options[article.id]) {
               options[article.id] = [];
             }
             options[article.id].push({
               value: row.manufacturer_id,
               label: row.manufacturers.name,
-              reference: row.reference || 'No Reference',
               certified_by_onee: row.certified_by_onee,
               manufacturer: row.manufacturers
             });
@@ -229,12 +225,12 @@ const ProjectCreationWizard: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, formData.articles]);
 
-  const handleSupplierChange = (article_id: string, reference: string, manufacturer_id: string) => {
+  const handleSupplierChange = (article_id: string, manufacturer_id: string) => {
     setFormData(prev => ({
       ...prev,
       suppliers: [
         ...prev.suppliers.filter(s => s.article_id !== article_id),
-        { article_id, manufacturer_id, reference },
+        { article_id, manufacturer_id },
       ],
     }));
   };
@@ -357,7 +353,7 @@ const ProjectCreationWizard: React.FC = () => {
           doc.text('Equipment', margin + 15, y);
           doc.text('Category', margin + 80, y);
           doc.text('Supplier', margin + 150, y);
-          doc.text('Reference', margin + 200, y);
+  
           doc.text('ONEE', margin + 250, y);
           y += 8;
           
@@ -397,9 +393,7 @@ const ProjectCreationWizard: React.FC = () => {
             const supplierName = supplierInfo?.manufacturer?.name || 'N/A';
             doc.text(supplierName.length > 25 ? supplierName.substring(0, 22) + '...' : supplierName, margin + 150, y);
             
-            // Reference (allow more characters)
-            const reference = supplier?.reference || 'N/A';
-            doc.text(reference.length > 20 ? reference.substring(0, 17) + '...' : reference, margin + 200, y);
+            
             
             // ONEE certification
             doc.text(supplierInfo?.certified_by_onee ? 'Yes' : 'No', margin + 250, y);
@@ -438,7 +432,7 @@ const ProjectCreationWizard: React.FC = () => {
               .map(s => {
                 const article = formData.articles.find(a => a.id === s.article_id);
                 const supplierInfo = manufacturerOptions[s.article_id]?.find((opt: ManufacturerOption) => opt.value === supplierId);
-                return `${article?.name || 'Unknown'} (Ref: ${supplierInfo?.reference || 'N/A'})`;
+                return `${article?.name || 'Unknown'}`;
               });
             
             // Check if we need a new page
@@ -547,7 +541,7 @@ const ProjectCreationWizard: React.FC = () => {
             project_id: project.id,
             article_id: supplier.article_id,
             manufacturer_id: supplier.manufacturer_id,
-            reference: supplier.reference,
+    
             certified_by_onee: supplierInfo?.certified_by_onee || false
           };
         });
@@ -785,7 +779,7 @@ const ProjectCreationWizard: React.FC = () => {
                   Assign Suppliers to Equipment
                 </Title>
                 <div style={{ opacity: 0.9, marginTop: 4 }}>
-                  Select reference and supplier for each piece of equipment
+                  Select supplier for each piece of equipment
                 </div>
               </div>
               
@@ -801,7 +795,6 @@ const ProjectCreationWizard: React.FC = () => {
                   <div style={{ display: 'grid', gap: 16, marginBottom: 24 }}>
                     {formData.articles.map((article, index) => {
                       const currentSupplier = formData.suppliers.find(s => s.article_id === article.id);
-                      const availableReferences = Array.from(new Set(manufacturerOptions[article.id]?.map(opt => opt.reference) || []));
                       
                       return (
                         <Card 
@@ -846,39 +839,16 @@ const ProjectCreationWizard: React.FC = () => {
                             </div>
                             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                               <Select
-                                style={{ width: 200 }}
-                                placeholder="Select reference"
-                                value={currentSupplier?.reference || undefined}
-                                onChange={reference => {
-                                  // Save the reference immediately so supplier dropdown becomes enabled
-                                  setFormData(prev => ({
-                                    ...prev,
-                                    suppliers: [
-                                      ...prev.suppliers.filter(s => s.article_id !== article.id),
-                                      { article_id: article.id, manufacturer_id: '', reference }
-                                    ]
-                                  }));
-                                }}
-                                options={availableReferences.map(ref => ({ value: ref, label: ref }))}
-                              />
-                              <Select
                                 style={{ width: 250 }}
                                 placeholder="Select supplier"
                                 value={currentSupplier?.manufacturer_id || undefined}
                                 onChange={val => {
-                                  if (currentSupplier?.reference) {
-                                    handleSupplierChange(article.id, currentSupplier.reference, val);
-                                  }
+                                  handleSupplierChange(article.id, val);
                                 }}
-                                options={currentSupplier?.reference ? 
-                                  (manufacturerOptions[article.id] || [])
-                                    .filter(opt => opt.reference === currentSupplier.reference)
-                                    .map(opt => ({
-                                      value: opt.value,
-                                      label: `${opt.label}${opt.certified_by_onee ? ' (ONEE Certified)' : ''}`
-                                    })) : []
-                                }
-                                disabled={!currentSupplier?.reference}
+                                options={(manufacturerOptions[article.id] || []).map(opt => ({
+                                  value: opt.value,
+                                  label: `${opt.label}${opt.certified_by_onee ? ' (ONEE Certified)' : ''}`
+                                }))}
                                 showSearch
                                 filterOption={(input, option) =>
                                   (option?.label ?? '').toLowerCase().includes(input.toLowerCase())

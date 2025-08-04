@@ -1,0 +1,26 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex 4d29575..8692cf6 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -13,6 +13,7 @@[m
+ [m
+ # misc[m
+ .DS_Store[m
+[32m+[m[32m.env[m
+ .env.local[m
+ .env.development.local[m
+ .env.test.local[m
+[1mdiff --git a/src/supabaseClient.ts b/src/supabaseClient.ts[m
+[1mindex 613c1c5..d12dba6 100644[m
+[1m--- a/src/supabaseClient.ts[m
+[1m+++ b/src/supabaseClient.ts[m
+[36m@@ -1,6 +1,6 @@[m
+ import { createClient } from '@supabase/supabase-js';[m
+ [m
+[31m-const supabaseUrl = 'https://sbewwzgvhhhohwxenosk.supabase.co';[m
+[31m-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiZXd3emd2aGhob2h3eGVub3NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyMjcwMzgsImV4cCI6MjA2NzgwMzAzOH0.4YqMCQatOU8uo_0R40n8xuvPBSNaLRmYtbXO7YFozbI';[m
+[32m+[m[32mconst supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;[m
+[32m+[m[32mconst supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY!;[m
+ [m
+ export const supabase = createClient(supabaseUrl, supabaseAnonKey); [m
+\ No newline at end of file[m

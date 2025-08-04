@@ -18,7 +18,7 @@ const ProductInfo: React.FC = () => {
           id, name, category:categories(name),
           article_manufacturer:article_manufacturer(
             manufacturer:manufacturers(id, name, contact, phone, email),
-            reference, certified_by_onee
+            certified_by_onee
           )
         `)
         .eq('id', id)
@@ -32,13 +32,8 @@ const ProductInfo: React.FC = () => {
   if (loading) return <Spin size="large" style={{ display: 'block', margin: '60px auto' }} />;
   if (!product) return <Typography.Text type="danger">Product not found.</Typography.Text>;
 
-  // Group manufacturers by reference
-  const manufacturersByReference: Record<string, any[]> = {};
-  (product.article_manufacturer || []).forEach((am: any) => {
-    const ref = am.reference || 'No Reference';
-    if (!manufacturersByReference[ref]) manufacturersByReference[ref] = [];
-    manufacturersByReference[ref].push(am);
-  });
+  // Group manufacturers
+  const manufacturers = product.article_manufacturer || [];
 
   return (
     <div>
@@ -51,26 +46,24 @@ const ProductInfo: React.FC = () => {
           <Descriptions.Item label="Category">{product.category?.name}</Descriptions.Item>
         </Descriptions>
       </Card>
-      <Typography.Title level={4}>Manufacturers by Reference</Typography.Title>
-      {Object.keys(manufacturersByReference).length === 0 ? (
+      <Typography.Title level={4}>Manufacturers</Typography.Title>
+      {manufacturers.length === 0 ? (
         <Empty description="No manufacturers found." />
       ) : (
-        Object.entries(manufacturersByReference).map(([reference, mans]) => (
-          <Card key={reference} title={`Reference: ${reference}`} style={{ marginBottom: 16 }}>
-            <List
-              bordered
-              dataSource={mans}
-              renderItem={(am: any) => (
-                <List.Item>
-                  <Link to={`/manufacturers/${am.manufacturer?.id}`}><b>{am.manufacturer?.name}</b></Link> {am.certified_by_onee ? '[ONEE]' : ''}<br />
-                  Contact: {am.manufacturer?.contact || '-'} | Phone: {am.manufacturer?.phone || '-'} | Email: {am.manufacturer?.email || '-'}
-                </List.Item>
-              )}
-              locale={{ emptyText: <Empty description="No manufacturers for this reference." /> }}
-              style={{ background: '#fafcff', borderRadius: 8 }}
-            />
-          </Card>
-        ))
+        <Card style={{ marginBottom: 16 }}>
+          <List
+            bordered
+            dataSource={manufacturers}
+            renderItem={(am: any) => (
+              <List.Item>
+                <Link to={`/manufacturers/${am.manufacturer?.id}`}><b>{am.manufacturer?.name}</b></Link> {am.certified_by_onee ? '[ONEE]' : ''}<br />
+                Contact: {am.manufacturer?.contact || '-'} | Phone: {am.manufacturer?.phone || '-'} | Email: {am.manufacturer?.email || '-'}
+              </List.Item>
+            )}
+            locale={{ emptyText: <Empty description="No manufacturers found." /> }}
+            style={{ background: '#fafcff', borderRadius: 8 }}
+          />
+        </Card>
       )}
     </div>
   );

@@ -33,7 +33,7 @@ function ProductSearch() {
         id, name,
         category:categories(name),
         article_manufacturer:article_manufacturer(
-          reference, certified_by_onee,
+          certified_by_onee,
           manufacturer:manufacturers(id, name, contact, phone, email)
         )
       `);
@@ -43,15 +43,15 @@ function ProductSearch() {
       return;
     }
     const articles = articlesData || [];
-    setData(articles.map((article: any) => ({
-      key: article.id,
+    setData(articles.map((article: any, index: number) => ({
+      key: `${article.id}-${index}`,
       id: article.id,
       name: article.name,
       category: article.category?.name || '',
-      manufacturerReferences: (article.article_manufacturer || []).map((am: any) => ({
+      manufacturerReferences: (article.article_manufacturer || []).map((am: any, amIndex: number) => ({
         manufacturer: am.manufacturer,
-        reference: am.reference || '',
         certified_by_onee: am.certified_by_onee,
+        uniqueKey: `${am.manufacturer.id}-${amIndex}`
       })),
       certified_by_onee: (article.article_manufacturer || []).some((am: any) => am.certified_by_onee),
       onManufacturerClick: (m: any) => {
@@ -80,7 +80,6 @@ function ProductSearch() {
     setEditCategory(record.category);
     setEditPairs(record.manufacturerReferences.map((mr: any) => ({
       manufacturerId: mr.manufacturer.id,
-      reference: mr.reference,
       certified_by_onee: mr.certified_by_onee,
     })));
     setEditModalVisible(true);
@@ -97,7 +96,6 @@ function ProductSearch() {
   const handleAddPair = () => {
     setEditPairs(prev => [...prev, {
       manufacturerId: manufacturers[0]?.id || null,
-      reference: '',
       certified_by_onee: false
     }]);
   };
@@ -111,7 +109,7 @@ function ProductSearch() {
     setEditRecord(null);
     setEditName('');
     setEditCategory(categories[0]?.name || '');
-    setEditPairs([{ manufacturerId: manufacturers[0]?.id || null, reference: '', certified_by_onee: false }]);
+    setEditPairs([{ manufacturerId: manufacturers[0]?.id || null, certified_by_onee: false }]);
     setEditModalVisible(true);
   };
 
@@ -159,7 +157,6 @@ function ProductSearch() {
           id: newAMId,
           article_id: articleId,
           manufacturer_id: pair.manufacturerId,
-          reference: pair.reference,
           certified_by_onee: pair.certified_by_onee,
         });
       console.log('Insert manufacturer pair result:', { pair, insError });
@@ -233,17 +230,17 @@ function ProductSearch() {
       render: (text: string) => <strong>{text}</strong>
     },
     {
-      title: 'Manufacturer & Reference',
+      title: 'Manufacturers',
       dataIndex: 'manufacturerReferences',
       key: 'manufacturerReferences',
       render: (_: any, record: any) => (
         <Space wrap size="small">
           {record.manufacturerReferences.map((mr: any) => (
             <Tag
-              key={`${mr.manufacturer.id}-${mr.reference}`}
+              key={mr.uniqueKey}
               onClick={e => { e.stopPropagation(); record.onManufacturerClick(mr.manufacturer); }}
             >
-              {mr.manufacturer.name} ({mr.reference})
+              {mr.manufacturer.name}
             </Tag>
           ))}
         </Space>
@@ -355,11 +352,7 @@ function ProductSearch() {
                   onChange={val => handlePairChange(idx, 'manufacturerId', val)}
                   options={manufacturers.map(m => ({ label: m.name, value: m.id }))}
                 />
-                <Input
-                  placeholder="Reference"
-                  value={pair.reference}
-                  onChange={e => handlePairChange(idx, 'reference', e.target.value)}
-                />
+
                 <Checkbox
                   checked={pair.certified_by_onee}
                   onChange={e => handlePairChange(idx, 'certified_by_onee', e.target.checked)}

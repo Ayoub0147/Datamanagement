@@ -240,7 +240,7 @@ const CompletedProjects: React.FC = () => {
           y += 6;
           doc.text(`   Supplier: ${item.manufacturers?.name || 'Not assigned'}`, margin + 10, y);
           y += 6;
-          doc.text(`   Reference: ${item.reference || 'N/A'}`, margin + 10, y);
+  
           y += 6;
           doc.text(`   Certified: ${item.certified_by_onee ? 'Yes' : 'No'}`, margin + 10, y);
           y += 8;
@@ -900,11 +900,7 @@ const CompletedProjects: React.FC = () => {
                       dataIndex: ['manufacturers', 'name'],
                       key: 'supplier',
                     },
-                    {
-                      title: 'Reference',
-                      dataIndex: 'reference',
-                      key: 'reference',
-                    },
+                    
                     {
                       title: 'Certified',
                       dataIndex: 'certified_by_onee',
