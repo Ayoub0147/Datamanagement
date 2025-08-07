@@ -9,12 +9,19 @@ import {
   Modal,
   Button,
   Form,
+<<<<<<< HEAD
   message,
   DatePicker
 } from 'antd';
 import { supabase } from './supabaseClient';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+=======
+  message
+} from 'antd';
+import { supabase } from './supabaseClient';
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 
 const { Title } = Typography;
 
@@ -23,13 +30,17 @@ function ManufacturerSearch() {
   const [manufacturers, setManufacturers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+<<<<<<< HEAD
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [minEarnings, setMinEarnings] = useState<number>(0);
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'add' | 'edit'>('add');
   const [editTarget, setEditTarget] = useState<any | null>(null);
   const [form] = Form.useForm();
+<<<<<<< HEAD
   const [earningsYear, setEarningsYear] = useState<number | null>(null);
   const [earningsValue, setEarningsValue] = useState<number | null>(null);
 
@@ -73,6 +84,37 @@ function ManufacturerSearch() {
     if (searchValue) {
       query = query.ilike('name', `%${searchValue}%`);
     }
+=======
+
+  useEffect(() => {
+    fetchManufacturers(search);
+  }, [search]);
+
+  const fetchManufacturers = async (searchValue: string) => {
+    setLoading(true);
+    setError(null);
+    const query = supabase
+      .from('manufacturers')
+      .select(`
+        id,
+        name,
+        contact,
+        phone,
+        email,
+        manufacturer_contacts (
+          id,
+          contact_name,
+          phone,
+          email
+        )
+      `)
+      .order('name');
+
+    if (searchValue) {
+      query.ilike('name', `%${searchValue}%`);
+    }
+
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     const { data, error } = await query;
     if (error) {
       setError(error.message);
@@ -91,6 +133,7 @@ function ManufacturerSearch() {
   };
 
   const openEdit = (record: any) => {
+<<<<<<< HEAD
     // If manufacturer_earnings exists, prefill year and earnings
     const earningsArr = Array.isArray(record.manufacturer_earnings) ? record.manufacturer_earnings : [];
     form.setFieldsValue({
@@ -98,11 +141,15 @@ function ManufacturerSearch() {
       earningsYear: earningsArr.length > 0 ? earningsArr[0].year : undefined,
       earningsValue: earningsArr.length > 0 ? earningsArr[0].earnings : undefined
     });
+=======
+    form.setFieldsValue(record);
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     setModalType('edit');
     setEditTarget(record);
     setModalVisible(true);
   };
 
+<<<<<<< HEAD
   const handleSubmit = async (values: any) => {
     try {
       const { name, contact, phone, email, earningsYear, earningsValue } = values;
@@ -153,6 +200,33 @@ function ManufacturerSearch() {
       }
       Modal.error({ title: 'Error', content: errorMsg });
     }
+=======
+  const handleSubmit = async () => {
+    const values = await form.validateFields();
+    if (modalType === 'add') {
+      const id = crypto.randomUUID();
+      const { error } = await supabase
+        .from('manufacturers')
+        .insert({ id, ...values });
+      if (error) {
+        Modal.error({ title: 'Add failed', content: error.message });
+        return;
+      }
+      message.success('Manufacturer added');
+    } else if (editTarget) {
+      const { error } = await supabase
+        .from('manufacturers')
+        .update(values)
+        .eq('id', editTarget.id);
+      if (error) {
+        Modal.error({ title: 'Update failed', content: error.message });
+        return;
+      }
+      message.success('Manufacturer updated');
+    }
+    setModalVisible(false);
+    fetchManufacturers(search);
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
   };
 
   const handleDelete = (record: any) => {
@@ -170,7 +244,11 @@ function ManufacturerSearch() {
           return;
         }
         message.success('Deleted');
+<<<<<<< HEAD
         fetchManufacturers(search, selectedYear, minEarnings);
+=======
+        fetchManufacturers(search);
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       }
     });
   };
@@ -180,6 +258,7 @@ function ManufacturerSearch() {
     { title: 'Contact', dataIndex: 'contact' },
     { title: 'Phone', dataIndex: 'phone' },
     { title: 'Email', dataIndex: 'email' },
+<<<<<<< HEAD
     { title: 'Yearly Earnings', dataIndex: ['manufacturer_earnings', '0', 'earnings'],
       render: (_: any, record: any) => {
         const earningsArr = Array.isArray(record.manufacturer_earnings) ? record.manufacturer_earnings : [];
@@ -187,6 +266,8 @@ function ManufacturerSearch() {
         return earningsValue != null ? earningsValue.toLocaleString() : 'N/A';
       }
     },
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     {
       title: 'Actions',
       render: (_: any, record: any) => (
@@ -220,7 +301,11 @@ function ManufacturerSearch() {
   return (
     <>
       <Title level={2} style={{ textAlign: 'center' }}>Manufacturer Directory</Title>
+<<<<<<< HEAD
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24, gap: 16 }}>
+=======
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         <Button type="primary" icon={<PlusOutlined />} onClick={openAdd} style={{ marginRight: 16 }}>
           Add Manufacturer
         </Button>
@@ -229,6 +314,7 @@ function ManufacturerSearch() {
           allowClear
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+<<<<<<< HEAD
           style={{ width: 200 }}
         />
         <DatePicker
@@ -246,6 +332,9 @@ function ManufacturerSearch() {
           onChange={e => setMinEarnings(Number(e.target.value))}
           placeholder="Min Earnings"
           style={{ width: 140 }}
+=======
+          style={{ width: 400 }}
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         />
       </div>
       {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
@@ -265,6 +354,7 @@ function ManufacturerSearch() {
         title={modalType === 'add' ? 'Add Manufacturer' : 'Edit Manufacturer'}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
+<<<<<<< HEAD
         onOk={() => form.submit()}
         okText={modalType === 'add' ? 'Add' : 'Update'}
       >
@@ -278,6 +368,23 @@ function ManufacturerSearch() {
           </Form.Item>
           <Form.Item name="earningsValue" label="Earnings">
             <Input type="number" min={0} placeholder="Earnings" />
+=======
+        onOk={handleSubmit}
+        okText={modalType === 'add' ? 'Add' : 'Update'}
+      >
+        <Form layout="vertical" form={form}>
+          <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="contact" label="Contact">
+            <Input />
+          </Form.Item>
+          <Form.Item name="phone" label="Phone">
+            <Input />
+          </Form.Item>
+          <Form.Item name="email" label="Email">
+            <Input />
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
           </Form.Item>
         </Form>
       </Modal>

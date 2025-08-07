@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { Checkbox, Button, Spin, Typography, message, Collapse, Input } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+=======
+import { Checkbox, Button, Spin, Typography, message, Collapse } from 'antd';
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 import { supabase } from './supabaseClient';
 
 const { Title } = Typography;
@@ -30,7 +34,10 @@ const StepEquipmentSelector: React.FC<StepEquipmentSelectorProps> = ({ selectedS
   const [groupedArticles, setGroupedArticles] = useState<GroupedArticles>({});
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const [searchTerm, setSearchTerm] = useState('');
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -132,6 +139,7 @@ const StepEquipmentSelector: React.FC<StepEquipmentSelectorProps> = ({ selectedS
     onNext(selectedArticles);
   };
 
+<<<<<<< HEAD
   // Filter articles based on search term
   const filteredGroupedArticles = Object.entries(groupedArticles).reduce((acc, [categoryName, categoryArticles]) => {
     const filteredArticles = categoryArticles.filter(article =>
@@ -166,6 +174,11 @@ const StepEquipmentSelector: React.FC<StepEquipmentSelectorProps> = ({ selectedS
         />
       </div>
 
+=======
+  return (
+    <div style={{ maxWidth: 800, margin: '0 auto' }}>
+      <Title level={4}>Select Equipment</Title>
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       {loading ? (
         <Spin />
       ) : articles.length === 0 ? (
@@ -173,7 +186,11 @@ const StepEquipmentSelector: React.FC<StepEquipmentSelectorProps> = ({ selectedS
       ) : (
         <div>
           <Collapse expandIconPosition="end">
+<<<<<<< HEAD
             {Object.entries(filteredGroupedArticles).map(([categoryName, categoryArticles]) => (
+=======
+            {Object.entries(groupedArticles).map(([categoryName, categoryArticles]) => (
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
               <Panel 
                 header={`${categoryName} (${categoryArticles.length} items)`} 
                 key={categoryName}

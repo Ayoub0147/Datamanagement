@@ -20,9 +20,13 @@ import {
   Progress,
   Badge,
   Tooltip,
+<<<<<<< HEAD
   Divider,
   DatePicker,
   Checkbox
+=======
+  Divider
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -42,7 +46,10 @@ import {
 } from '@ant-design/icons';
 import { supabase } from './supabaseClient';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import dayjs from 'dayjs';
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 
 const { Title, Text } = Typography;
 
@@ -115,11 +122,14 @@ interface CategoryAgreement {
   agreement_type: string;
 }
 
+<<<<<<< HEAD
 interface AgreementType {
   id: string;
   name: string;
 }
 
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 // Configuration for each entity type
 const entityConfig = {
   domains: {
@@ -136,6 +146,7 @@ const entityConfig = {
     fields: ['name', 'domain_id'],
     dependencies: ['domains']
   },
+<<<<<<< HEAD
   agreement_types: {
     title: 'Agreement Types',
     icon: <FileTextOutlined />,
@@ -143,6 +154,8 @@ const entityConfig = {
     fields: ['name'],
     dependencies: []
   },
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
   categories: {
     title: 'Categories',
     icon: <FileTextOutlined />,
@@ -177,6 +190,16 @@ const entityConfig = {
     color: '#f5222d',
     fields: ['contractor_id', 'type', 'date_start', 'date_end', 'subdomain_id'],
     dependencies: ['contractors', 'subdomains']
+<<<<<<< HEAD
+=======
+  },
+  category_agreements: {
+    title: 'Category Agreements',
+    icon: <LinkOutlined />,
+    color: '#fa541c',
+    fields: ['category_id', 'agreement_type'],
+    dependencies: ['categories']
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
   }
 };
 
@@ -189,6 +212,7 @@ const DataManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState('domains');
   const [searchText, setSearchText] = useState('');
   const [form] = Form.useForm();
+<<<<<<< HEAD
   const [manufacturerYear, setManufacturerYear] = useState<number | null>(null);
   const [manufacturerMinEarnings, setManufacturerMinEarnings] = useState<number>(0);
   // Add state for earnings fields
@@ -196,6 +220,8 @@ const DataManagement: React.FC = () => {
   const [earningsValue, setEarningsValue] = useState<number | null>(null);
   // Add state for article manufacturer pairs
   const [manufacturerPairs, setManufacturerPairs] = useState<any[]>([]);
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 
   // Data states
   const [data, setData] = useState<Record<string, any[]>>({
@@ -206,8 +232,12 @@ const DataManagement: React.FC = () => {
     manufacturers: [],
     contractors: [],
     contractor_agreements: [],
+<<<<<<< HEAD
     category_agreements: [],
     agreement_types: []
+=======
+    category_agreements: []
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
   });
 
   // Fetch all data
@@ -222,8 +252,12 @@ const DataManagement: React.FC = () => {
         fetchManufacturers(),
         fetchContractors(),
         fetchContractorAgreements(),
+<<<<<<< HEAD
         fetchCategoryAgreements(),
         fetchAgreementTypes()
+=======
+        fetchCategoryAgreements()
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       ]);
 
       const newData = {
@@ -234,8 +268,12 @@ const DataManagement: React.FC = () => {
         manufacturers: results[4],
         contractors: results[5],
         contractor_agreements: results[6],
+<<<<<<< HEAD
         category_agreements: results[7],
         agreement_types: results[8]
+=======
+        category_agreements: results[7]
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       };
 
       setData(newData);
@@ -256,7 +294,14 @@ const DataManagement: React.FC = () => {
   const fetchSubdomains = async () => {
     const { data, error } = await supabase
       .from('subdomains')
+<<<<<<< HEAD
       .select(`*, domains!inner(name)`)
+=======
+      .select(`
+        *,
+        domains!inner(name)
+      `)
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       .order('name');
     
     if (error) throw error;
@@ -269,7 +314,14 @@ const DataManagement: React.FC = () => {
   const fetchCategories = async () => {
     const { data, error } = await supabase
       .from('categories')
+<<<<<<< HEAD
       .select(`*, subdomains!inner(name, domains!inner(name))`)
+=======
+      .select(`
+        *,
+        subdomains!inner(name, domains!inner(name))
+      `)
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       .order('name');
     
     if (error) throw error;
@@ -283,9 +335,28 @@ const DataManagement: React.FC = () => {
   const fetchArticles = async () => {
     const { data, error } = await supabase
       .from('articles')
+<<<<<<< HEAD
       .select(`*, 
         categories!inner(name, subdomains!inner(name, domains!inner(name))),
         article_manufacturer(id, manufacturer_id, certified_by_onee, manufacturers(name))`)
+=======
+      .select(`
+        *,
+        categories!inner(
+          name,
+          subdomains!inner(
+            name,
+            domains!inner(name)
+          )
+        ),
+        article_manufacturer(
+          id,
+          manufacturer_id,
+          certified_by_onee,
+          manufacturers(name)
+        )
+      `)
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       .order('name');
     
     if (error) throw error;
@@ -297,13 +368,18 @@ const DataManagement: React.FC = () => {
       manufacturers: item.article_manufacturer?.map((am: any) => ({
         id: am.id,
         manufacturer_id: am.manufacturer_id,
+<<<<<<< HEAD
         manufacturer_name: am.manufacturers?.name || 'Unknown',
+=======
+        manufacturer_name: am.manufacturers.name,
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         certified_by_onee: am.certified_by_onee
       })) || []
     })) || [];
   };
 
   const fetchManufacturers = async () => {
+<<<<<<< HEAD
     let query;
     if (manufacturerYear !== null) {
       query = supabase
@@ -319,6 +395,9 @@ const DataManagement: React.FC = () => {
         .order('name');
     }
     const { data, error } = await query;
+=======
+    const { data, error } = await supabase.from('manufacturers').select('*').order('name');
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     if (error) throw error;
     return data || [];
   };
@@ -332,9 +411,20 @@ const DataManagement: React.FC = () => {
   const fetchContractorAgreements = async () => {
     const { data, error } = await supabase
       .from('contractor_agreements')
+<<<<<<< HEAD
       .select(`*, 
         contractors!inner(name),
         subdomains!inner(name, domains!inner(name))`)
+=======
+      .select(`
+        *,
+        contractors!inner(name),
+        subdomains!inner(
+          name,
+          domains!inner(name)
+        )
+      `)
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       .order('date_start', { ascending: false });
     
     if (error) throw error;
@@ -347,6 +437,7 @@ const DataManagement: React.FC = () => {
   };
 
   const fetchCategoryAgreements = async () => {
+<<<<<<< HEAD
     const { data, error } = await supabase.from('category_agreement').select('*');
     if (error) throw error;
     return data || [];
@@ -388,6 +479,44 @@ const DataManagement: React.FC = () => {
     ).filter(Boolean);
     
     return Array.from(new Set([...contractorAgreementTypes, ...standaloneAgreementTypes]));
+=======
+    const { data, error } = await supabase
+      .from('category_agreement')
+      .select(`
+        *,
+        categories!inner(
+          name,
+          subdomains!inner(
+            name,
+            domains!inner(name)
+          )
+        )
+      `)
+      .order('agreement_type');
+    
+    if (error) throw error;
+    return data?.map(item => ({
+      ...item,
+      category_name: item.categories.name,
+      subdomain_name: item.categories.subdomains.name,
+      domain_name: item.categories.subdomains.domains.name
+    })) || [];
+  };
+
+  const getAvailableAgreementTypes = () => {
+    // Get unique agreement types from contractor agreements
+    const contractorAgreementTypes = Array.from(
+      new Set(data.contractor_agreements.map(ca => ca.type))
+    ).filter(Boolean);
+    
+    // Get unique agreement types from existing category agreements
+    const categoryAgreementTypes = Array.from(
+      new Set(data.category_agreements.map(ca => ca.agreement_type))
+    ).filter(Boolean);
+    
+    // Combine and deduplicate
+    return Array.from(new Set([...contractorAgreementTypes, ...categoryAgreementTypes]));
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
   };
 
   useEffect(() => {
@@ -397,6 +526,7 @@ const DataManagement: React.FC = () => {
   const handleAdd = () => {
     setEditMode(false);
     setEditingRecord(null);
+<<<<<<< HEAD
     setEarningsYear(null);
     setEarningsValue(null);
     setManufacturerPairs([{ manufacturerId: '', certified_by_onee: false }]);
@@ -410,12 +540,16 @@ const DataManagement: React.FC = () => {
     } else {
       form.resetFields();
     }
+=======
+    form.resetFields();
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     setModalVisible(true);
   };
 
   const handleEdit = async (record: any) => {
     setEditMode(true);
     setEditingRecord(record);
+<<<<<<< HEAD
     let formValues = { ...record };
     
     if (activeTab === 'articles') {
@@ -479,6 +613,25 @@ const DataManagement: React.FC = () => {
     setManufacturerPairs(prev => prev.filter((_, i) => i !== idx));
   };
 
+=======
+    
+    let formValues = { ...record };
+    
+    // Handle special cases for relationships
+    if (activeTab === 'categories') {
+      const agreements = data.category_agreements.filter(ca => ca.category_id === record.id);
+      formValues.agreement_types = agreements.map(ca => ca.agreement_type);
+    }
+    
+    if (activeTab === 'articles') {
+      formValues.manufacturers = record.manufacturers?.map((m: any) => m.manufacturer_id) || [];
+    }
+    
+    form.setFieldsValue(formValues);
+    setModalVisible(true);
+  };
+
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
   const handleDelete = async (id: string) => {
     try {
       let error;
@@ -487,6 +640,7 @@ const DataManagement: React.FC = () => {
       if (activeTab === 'categories') {
         await supabase.from('category_agreement').delete().eq('category_id', id);
       }
+<<<<<<< HEAD
       
       // Handle agreement types
       if (activeTab === 'agreement_types') {
@@ -501,6 +655,8 @@ const DataManagement: React.FC = () => {
         return;
       }
       
+=======
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       if (activeTab === 'articles') {
         await supabase.from('article_manufacturer').delete().eq('article_id', id);
       }
@@ -521,6 +677,7 @@ const DataManagement: React.FC = () => {
   const handleSubmit = async (values: any) => {
     try {
       const config = entityConfig[activeTab as keyof typeof entityConfig];
+<<<<<<< HEAD
       const tableName = activeTab === 'contractor_agreements' ? 'contractor_agreements' : activeTab.replace('_', '');
       
       if (activeTab === 'articles') {
@@ -609,6 +766,15 @@ const DataManagement: React.FC = () => {
         const { error } = await supabase
           .from(tableName)
           .update(updateValues)
+=======
+      const tableName = activeTab.replace('_', '');
+      
+      if (isEditMode) {
+        // Update existing record
+        const { error } = await supabase
+          .from(tableName)
+          .update(values)
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
           .eq('id', editingRecord.id);
         
         if (error) throw error;
@@ -623,6 +789,7 @@ const DataManagement: React.FC = () => {
           await supabase.from('category_agreement').insert(agreements);
         }
         
+<<<<<<< HEAD
         message.success(`${config.title.slice(0, -1)} updated successfully`);
       } else {
         // Create new record
@@ -666,21 +833,63 @@ const DataManagement: React.FC = () => {
         if (activeTab === 'categories' && values.agreement_types && newData?.[0]) {
           const agreements = values.agreement_types.map((type: string) => ({
             category_id: newData[0].id,
+=======
+        if (activeTab === 'articles' && values.manufacturers) {
+          await supabase.from('article_manufacturer').delete().eq('article_id', editingRecord.id);
+          const manufacturers = values.manufacturers.map((id: string) => ({
+            article_id: editingRecord.id,
+            manufacturer_id: id
+          }));
+          await supabase.from('article_manufacturer').insert(manufacturers);
+        }
+        
+        message.success(`${config.title.slice(0, -1)} updated successfully`);
+      } else {
+        // Create new record
+        const { data, error } = await supabase
+          .from(tableName)
+          .insert({ ...values, id: crypto.randomUUID() })
+          .select();
+        
+        if (error) throw error;
+        
+        // Handle relationship creation
+        if (activeTab === 'categories' && values.agreement_types && data?.[0]) {
+          const agreements = values.agreement_types.map((type: string) => ({
+            category_id: data[0].id,
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
             agreement_type: type
           }));
           await supabase.from('category_agreement').insert(agreements);
         }
         
+<<<<<<< HEAD
+=======
+        if (activeTab === 'articles' && values.manufacturers && data?.[0]) {
+          const manufacturers = values.manufacturers.map((id: string) => ({
+            article_id: data[0].id,
+            manufacturer_id: id
+          }));
+          await supabase.from('article_manufacturer').insert(manufacturers);
+        }
+        
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         message.success(`${config.title.slice(0, -1)} created successfully`);
       }
       
       setModalVisible(false);
       fetchAllData();
+<<<<<<< HEAD
     } catch (error: any) {
       console.error('Failed to save record:', error);
       message.error(`Failed to save record: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
+=======
+    } catch (error) {
+      console.error('Error saving record:', error);
+      message.error(`Failed to save record: ${error instanceof Error ? error.message : 'Unknown error'}`);
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     }
   };
 
@@ -803,6 +1012,7 @@ const DataManagement: React.FC = () => {
       type: (
         <Form.Item
           name="type"
+<<<<<<< HEAD
           label="Agreement Types"
           rules={[{ required: true, message: 'Please select at least one agreement type' }]}
         >
@@ -853,19 +1063,70 @@ const DataManagement: React.FC = () => {
           <Select 
             mode="tags" 
             placeholder="Select or type agreement types"
+=======
+          label="Agreement Type"
+          rules={[{ required: true, message: 'Please enter agreement type' }]}
+        >
+          <Input placeholder="e.g., public, private, partnership" />
+        </Form.Item>
+      ),
+             agreement_type: (
+         <Form.Item
+           name="agreement_type"
+           label="Agreement Type"
+           rules={[{ required: true, message: 'Please select an agreement type' }]}
+         >
+           <Select 
+             placeholder="Select an agreement type"
+             showSearch
+             filterOption={(input, option) =>
+               (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+             }
+           >
+             {getAvailableAgreementTypes().map(type => (
+               <Select.Option key={type} value={type}>
+                 {type}
+               </Select.Option>
+             ))}
+           </Select>
+         </Form.Item>
+       ),
+      date_start: (
+        <Form.Item name="date_start" label="Start Date">
+          <Input type="date" />
+        </Form.Item>
+      ),
+      date_end: (
+        <Form.Item name="date_end" label="End Date">
+          <Input type="date" />
+        </Form.Item>
+      ),
+      manufacturers: (
+        <Form.Item name="manufacturers" label="Manufacturers">
+          <Select
+            mode="multiple"
+            placeholder="Select manufacturers"
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
             allowClear
             showSearch
             filterOption={(input, option) =>
               (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
             }
           >
+<<<<<<< HEAD
             {getAvailableAgreementTypes().map(type => (
               <Select.Option key={type} value={type}>
                 {type}
+=======
+            {data.manufacturers.map(manufacturer => (
+              <Select.Option key={manufacturer.id} value={manufacturer.id}>
+                {manufacturer.name}
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
               </Select.Option>
             ))}
           </Select>
         </Form.Item>
+<<<<<<< HEAD
       )
     };
 
@@ -958,6 +1219,37 @@ const DataManagement: React.FC = () => {
             {formFields[field as keyof typeof formFields]}
           </React.Fragment>
         ))}
+=======
+      ),
+             agreement_types: (
+         <Form.Item
+           name="agreement_types"
+           label="Agreement Types"
+           rules={[{ required: true, message: 'Please select at least one agreement type' }]}
+         >
+           <Select 
+             mode="tags" 
+             placeholder="Select or type agreement types"
+             allowClear
+             showSearch
+             filterOption={(input, option) =>
+               (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+             }
+           >
+             {getAvailableAgreementTypes().map(type => (
+               <Select.Option key={type} value={type}>
+                 {type}
+               </Select.Option>
+             ))}
+           </Select>
+         </Form.Item>
+       )
+    };
+
+    return (
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        {config.fields.map(field => formFields[field as keyof typeof formFields])}
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       </Form>
     );
   };
@@ -992,7 +1284,11 @@ const DataManagement: React.FC = () => {
                 <Space size="small">
                   <Tag color="blue">{record.domain_name}</Tag>
                   {record.subdomain_name && <Text type="secondary">{record.subdomain_name}</Text>}
+<<<<<<< HEAD
         </Space>
+=======
+                </Space>
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
               )}
             </Space>
           );
@@ -1040,6 +1336,7 @@ const DataManagement: React.FC = () => {
       case 'categories':
         return [
           ...baseColumns,
+<<<<<<< HEAD
     { 
       title: 'Agreement Types', 
       key: 'agreement_types',
@@ -1057,6 +1354,25 @@ const DataManagement: React.FC = () => {
         );
       }
     },
+=======
+          { 
+            title: 'Agreement Types', 
+            key: 'agreement_types',
+            render: (_: any, record: any) => {
+              const agreements = data.category_agreements
+                .filter(ca => ca.category_id === record.id)
+                .map(ca => ca.agreement_type);
+              
+              return (
+                <div>
+                  {agreements.map(agreement => (
+                    <Tag key={agreement} color="blue">{agreement}</Tag>
+                  ))}
+                </div>
+              );
+            }
+          },
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
           actionColumn
         ];
       
@@ -1076,7 +1392,11 @@ const DataManagement: React.FC = () => {
                         {manufacturer.certified_by_onee && (
                           <Tag color="green">ONEE Certified</Tag>
                         )}
+<<<<<<< HEAD
         </Space>
+=======
+                      </Space>
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
                     ))}
                   </Space>
                 ) : (
@@ -1107,6 +1427,7 @@ const DataManagement: React.FC = () => {
                </Text>
              )
            },
+<<<<<<< HEAD
     { title: 'Contact', dataIndex: 'contact', key: 'contact' },
     { title: 'Phone', dataIndex: 'phone', key: 'phone' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
@@ -1129,6 +1450,21 @@ const DataManagement: React.FC = () => {
         </Tag>
       )
     },
+=======
+           { title: 'Contact', dataIndex: 'contact', key: 'contact' },
+           { title: 'Phone', dataIndex: 'phone', key: 'phone' },
+           { title: 'Email', dataIndex: 'email', key: 'email' },
+           { 
+             title: 'Is Supplier', 
+             dataIndex: 'is_supplier', 
+             key: 'is_supplier',
+             render: (isSupplier: boolean) => (
+               <Tag color={isSupplier ? 'green' : 'red'}>
+                 {isSupplier ? 'Yes' : 'No'}
+               </Tag>
+             )
+           },
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
            actionColumn
          ];
       
@@ -1151,6 +1487,7 @@ const DataManagement: React.FC = () => {
                </Text>
              )
            },
+<<<<<<< HEAD
     { title: 'Sigle', dataIndex: 'sigle', key: 'sigle' },
     { title: 'Country', dataIndex: 'country', key: 'country' },
     { title: 'Phone', dataIndex: 'phone', key: 'phone' },
@@ -1173,6 +1510,18 @@ const DataManagement: React.FC = () => {
               ));
             }
           },
+=======
+           { title: 'Sigle', dataIndex: 'sigle', key: 'sigle' },
+           { title: 'Country', dataIndex: 'country', key: 'country' },
+           { title: 'Phone', dataIndex: 'phone', key: 'phone' },
+           actionColumn
+         ];
+      
+      case 'contractor_agreements':
+        return [
+          { title: 'Contractor', dataIndex: 'contractor_name', key: 'contractor_name' },
+          { title: 'Type', dataIndex: 'type', key: 'type' },
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
           { title: 'Subdomain', dataIndex: 'subdomain_name', key: 'subdomain_name' },
           { title: 'Domain', dataIndex: 'domain_name', key: 'domain_name' },
           { title: 'Start Date', dataIndex: 'date_start', key: 'date_start' },
@@ -1180,11 +1529,20 @@ const DataManagement: React.FC = () => {
           actionColumn
         ];
       
+<<<<<<< HEAD
       
       
       case 'agreement_types':
         return [
           { title: 'Name', dataIndex: 'name', key: 'name' },
+=======
+      case 'category_agreements':
+        return [
+          { title: 'Category', dataIndex: 'category_name', key: 'category_name' },
+          { title: 'Subdomain', dataIndex: 'subdomain_name', key: 'subdomain_name' },
+          { title: 'Domain', dataIndex: 'domain_name', key: 'domain_name' },
+          { title: 'Agreement Type', dataIndex: 'agreement_type', key: 'agreement_type' },
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
           actionColumn
         ];
       
@@ -1201,8 +1559,13 @@ const DataManagement: React.FC = () => {
       totalArticles: data.articles.length,
       totalManufacturers: data.manufacturers.length,
       totalContractors: data.contractors.length,
+<<<<<<< HEAD
               totalContractorAgreements: data.contractor_agreements.length,
         totalAgreementTypes: data.agreement_types.length,
+=======
+      totalContractorAgreements: data.contractor_agreements.length,
+      totalCategoryAgreements: data.category_agreements.length,
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       linkedArticles: data.articles.filter(a => a.manufacturers?.length > 0).length,
       suppliers: data.manufacturers.filter(m => m.is_supplier).length
     };
@@ -1231,7 +1594,11 @@ const DataManagement: React.FC = () => {
     children: (
       <div>
         {/* Search and Actions */}
+<<<<<<< HEAD
         <Card styles={{ body: { marginBottom: 16 } }}>
+=======
+        <Card style={{ marginBottom: 16 }}>
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
           <Row gutter={16} align="middle">
             <Col flex="auto">
               <Input
@@ -1259,6 +1626,11 @@ const DataManagement: React.FC = () => {
           </Row>
         </Card>
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         {/* Table */}
         <Table
           columns={getColumns(key)}
@@ -1359,6 +1731,7 @@ const DataManagement: React.FC = () => {
         />
 
         <Modal
+<<<<<<< HEAD
           title={isEditMode ? `Update ${entityConfig[activeTab as keyof typeof entityConfig].title.slice(0, -1)}` : `Add ${entityConfig[activeTab as keyof typeof entityConfig].title.slice(0, -1)}`}
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
@@ -1378,6 +1751,25 @@ const DataManagement: React.FC = () => {
               </Space>
             </div>
           )}
+=======
+          title={`${isEditMode ? 'Edit' : 'Add'} ${entityConfig[activeTab as keyof typeof entityConfig].title.slice(0, -1)}`}
+          open={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          footer={null}
+          width={600}
+        >
+          {renderForm()}
+          <div style={{ marginTop: '24px', textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => setModalVisible(false)}>
+                Cancel
+              </Button>
+              <Button type="primary" onClick={() => form.submit()}>
+                {isEditMode ? 'Update' : 'Create'}
+              </Button>
+            </Space>
+          </div>
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         </Modal>
       </Card>
     </div>

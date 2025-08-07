@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+<<<<<<< HEAD
 import {
   Input, Table, Tag, Typography, Space, Spin, Alert, Modal, Descriptions, Button, Select, Checkbox, Form, message
 } from 'antd';
+=======
+import { Input, Table, Tag, Typography, Space, Spin, Alert, Modal, Descriptions, Button, Select, Checkbox, Form, message } from 'antd';
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
 import { supabase } from './supabaseClient';
 import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
@@ -116,14 +120,29 @@ function ProductSearch() {
   };
 
   const handleEditSubmit = async () => {
+<<<<<<< HEAD
     setActionLoading(true);
     const catObj = categories.find(c => c.name === editCategory) || categories[0];
     let articleId = editRecord?.id;
     if (isAddMode) {
+=======
+    console.log('handleEditSubmit called');
+    setActionLoading(true);
+    const catObj = categories.find(c => c.name === editCategory) || categories[0];
+    let articleId = editRecord?.id;
+    console.log('isAddMode:', isAddMode);
+    console.log('Submitting values:', { name: editName, category: editCategory, catObj, editPairs });
+    if (isAddMode) {
+      // Insert new article with UUID
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       const newArticleId = crypto.randomUUID();
       const { error: insertError } = await supabase
         .from('articles')
         .insert({ id: newArticleId, name: editName, category_id: catObj?.id });
+<<<<<<< HEAD
+=======
+      console.log('Insert article result:', { newArticleId, insertError });
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       if (insertError) {
         Modal.error({ title: 'Add failed', content: insertError.message || String(insertError) });
         setActionLoading(false);
@@ -131,17 +150,32 @@ function ProductSearch() {
       }
       articleId = newArticleId;
     } else {
+<<<<<<< HEAD
+=======
+      // Update existing article
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       const { error: articleError } = await supabase
         .from('articles')
         .update({ name: editName, category_id: catObj?.id })
         .eq('id', articleId);
+<<<<<<< HEAD
+=======
+      console.log('Update article result:', { articleError });
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       if (articleError) {
         Modal.error({ title: 'Update failed', content: articleError.message || String(articleError) });
         setActionLoading(false);
         return;
       }
+<<<<<<< HEAD
       await supabase.from('article_manufacturer').delete().eq('article_id', articleId);
     }
+=======
+      // Remove old manufacturer pairs
+      await supabase.from('article_manufacturer').delete().eq('article_id', articleId);
+    }
+    // Insert manufacturer/reference pairs with UUIDs
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     for (const pair of editPairs) {
       const newAMId = crypto.randomUUID();
       const { error: insError } = await supabase
@@ -152,6 +186,10 @@ function ProductSearch() {
           manufacturer_id: pair.manufacturerId,
           certified_by_onee: pair.certified_by_onee,
         });
+<<<<<<< HEAD
+=======
+      console.log('Insert manufacturer pair result:', { pair, insError });
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
       if (insError) {
         Modal.error({ title: isAddMode ? 'Add failed' : 'Update failed', content: insError.message || String(insError) });
         setActionLoading(false);
@@ -163,9 +201,18 @@ function ProductSearch() {
     setIsAddMode(false);
     message.success(isAddMode ? 'Product added' : 'Article updated');
     fetchArticles();
+<<<<<<< HEAD
   };
 
   const handleDelete = (record: any) => {
+=======
+    console.log('Modal closed, product added/updated');
+  };
+
+  const handleDelete = (record: any) => {
+    console.log('handleDelete called', record);
+    console.log('About to call Modal.confirm');
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
     Modal.confirm({
       title: 'Delete this article?',
       icon: <ExclamationCircleOutlined />,
@@ -174,8 +221,16 @@ function ProductSearch() {
       cancelText: 'No',
       okButtonProps: { loading: actionLoading },
       onOk: async () => {
+<<<<<<< HEAD
         setActionLoading(true);
         const articleId = record.id;
+=======
+        console.log('Modal OK clicked for delete', record);
+        setActionLoading(true);
+        const articleId = record.id;
+        console.log('Deleting article and related pairs with id:', articleId);
+        // Delete all related article_manufacturer rows by article_id (UUID)
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         const { error: amError } = await supabase
           .from('article_manufacturer')
           .delete()
@@ -185,6 +240,10 @@ function ProductSearch() {
           setActionLoading(false);
           return;
         }
+<<<<<<< HEAD
+=======
+        // Delete the article itself by id (UUID)
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         const { error: articleError } = await supabase
           .from('articles')
           .delete()
@@ -239,7 +298,11 @@ function ProductSearch() {
       render: (_: any, record: any) => (
         <Space size="middle">
           <EditOutlined onClick={() => handleEdit(record)} />
+<<<<<<< HEAD
           <DeleteOutlined onClick={() => handleDelete(record)} />
+=======
+          <DeleteOutlined onClick={() => { console.log('Delete icon clicked', record); handleDelete(record); }} />
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
         </Space>
       )
     }
@@ -324,6 +387,7 @@ function ProductSearch() {
           </Form.Item>
           <Form.Item label="Category">
             <Select
+<<<<<<< HEAD
               showSearch
               placeholder="Select a category"
               value={editCategory}
@@ -331,6 +395,10 @@ function ProductSearch() {
               filterOption={(input, option) =>
                 (option?.label as string).toLowerCase().includes(input.toLowerCase())
               }
+=======
+              value={editCategory}
+              onChange={val => setEditCategory(val)}
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
               options={categories.map(c => ({ label: c.name, value: c.name }))}
             />
           </Form.Item>
@@ -338,6 +406,7 @@ function ProductSearch() {
             {editPairs.map((pair, idx) => (
               <Space key={idx} align="start" style={{ marginBottom: 8 }}>
                 <Select
+<<<<<<< HEAD
                   showSearch
                   placeholder="Select a manufacturer"
                   value={pair.manufacturerId}
@@ -347,6 +416,13 @@ function ProductSearch() {
                   }
                   options={manufacturers.map(m => ({ label: m.name, value: m.id }))}
                 />
+=======
+                  value={pair.manufacturerId}
+                  onChange={val => handlePairChange(idx, 'manufacturerId', val)}
+                  options={manufacturers.map(m => ({ label: m.name, value: m.id }))}
+                />
+
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
                 <Checkbox
                   checked={pair.certified_by_onee}
                   onChange={e => handlePairChange(idx, 'certified_by_onee', e.target.checked)}
@@ -366,4 +442,8 @@ function ProductSearch() {
   );
 }
 
+<<<<<<< HEAD
 export default ProductSearch;
+=======
+export default ProductSearch; 
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de

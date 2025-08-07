@@ -557,6 +557,25 @@ const Dashboard: React.FC = () => {
               <div 
                 style={{ 
                   padding: '12px', 
+<<<<<<< HEAD
+=======
+                  background: '#fff7e6', 
+                  borderRadius: 8, 
+                  border: '1px solid #ffd591',
+                  cursor: 'pointer'
+                }}
+                onClick={() => navigate('/projects/completed')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ExclamationCircleOutlined style={{ color: '#faad14' }} />
+                  <Text strong style={{ color: '#faad14' }}>Generate Reports</Text>
+                </div>
+              </div>
+              
+              <div 
+                style={{ 
+                  padding: '12px', 
+>>>>>>> df1c5c830e47d86bb002e7b1585cc657ce69b0de
                   background: '#f6ffed', 
                   borderRadius: 8, 
                   border: '1px solid #b7eb8f',
